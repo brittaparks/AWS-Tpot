@@ -164,7 +164,7 @@ src_ip: "8.219.248.7 AND message : "CMD"
 
 <img width="1616" alt="image" src="https://github.com/user-attachments/assets/b10ece5c-c983-4ced-af7b-5a9d3ab50c67">
 
-This attacker attempted **1900+ SSH connections**, exclusively targeting **port 22**. Using the Cowrie `input` field, I found this command issued:
+This attacker attempted **1900+ SSH connections**, exclusively targeting **port 22**. As also observed in the Cowrie `input` field, I found this command issued:
 
 ```bash
 uname -s -v -n -r -m
