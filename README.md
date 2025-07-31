@@ -114,6 +114,19 @@ Waited for attacks to begin.
 
 ---
 
+
+# 🔍 Analyzing Attacker Behavior with Cowrie Logs
+
+```bash
+sudo docker logs cowrie | grep -E "(New connection|login attempt.*failed|login attempt.*succeeded|CMD:)"
+```
+<img width="1616" alt="image" src="https://github.com/user-attachments/assets/c67bc565-e217-4fbd-b09a-0e34479d61d9">
+
+This command revealed:
+- New connections
+- Login attempts (both failed and successful)
+- Commands executed by attackers.  I found the commands executed by the IP "8.219.248.7" to be interesting.
+---
 # 📡 Traffic Capture with tcpdump
 
 ```bash
@@ -127,21 +140,9 @@ Explanation:
 - `-nn` — disable name resolution (IP and ports stay numeric)
 - `-s 0` — capture full packet contents
 
-I used `docker network ls` to find Cowrie’s bridge interface and adjust the capture accordingly.
+Initially, I wasn't capturing any traffic with tcpdump because the attacks were targeting the Dockerized containers inside the T-Pot environment, not the host interface. After identifying this, I shifted focus to Cowrie, where I had observed prior SSH interactions and could review attacker commands directly. To align tcpdump with the correct network layer, I ran docker network ls to identify the bridge network ID, then used that ID in the interface parameter of my capture command.
 
----
-
-# 🔍 Analyzing Attacker Behavior with Cowrie Logs
-
-```bash
-sudo docker logs cowrie | grep -E "(New connection|login attempt.*failed|login attempt.*succeeded|CMD:)"
-```
-<img width="1616" alt="image" src="https://github.com/user-attachments/assets/c67bc565-e217-4fbd-b09a-0e34479d61d9">
-
-This command revealed:
-- New connections
-- Login attempts (both failed and successful)
-- Commands executed by attackers
+Although my primary target IP (8.219.248.7) did not appear in this specific capture—later confirmed via Elastic logs to have completed its activity several hours earlier—I was still able to observe multiple active Telnet connection attempts from a new source IP (121.150.18.228). These were captured and analyzed to demonstrate ongoing scanning behavior and real-world attack traffic within the honeypot environment.
 
 ---
 
@@ -198,11 +199,13 @@ T-Pot captures attacks in high fidelity and makes it possible to pivot and explo
 
 
 ---
+### 🧠 Mapped MITRE ATT&CK Techniques
 
-# 🧠 Mapped MITRE ATT&CK Techniques
+| Tactic               | Technique Name                 | Technique ID     |
+|----------------------|--------------------------------|------------------|
+| **Discovery**         | System Information Discovery   | `T1082`          |
+| **Discovery**         | Network Service Scanning       | `T1046`          |
+| **Credential Access** | Brute Force: SSH               | `T1110.001`      |
+| **Execution**         | Command & Scripting (Bash)     | `T1059.004`      |
+| **Lateral Movement**  | Remote Services: Telnet        | `T1021.001`      |
 
-| Tactic              | Technique Name                | Technique ID     |
-|---------------------|-------------------------------|------------------|
-| **Discovery**        | System Information Discovery   | `T1082`          |
-| **Credential Access**| Brute Force: SSH               | `T1110.001`      |
-| **Execution**        | Command & Scripting (Bash)     | `T1059.004`      |
